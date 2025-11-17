@@ -60,9 +60,12 @@
   </div>
 
   <!-- ★★★ Netlify 表单（可上传图片） ★★★ -->
+  <!-- ★★★ Netlify 表单（可上传图片） ★★★ -->
   <form name="pvz-submission"
         method="POST"
+        action="/"
         data-netlify="true"
+        netlify
         enctype="multipart/form-data"
         class="box">
 
@@ -85,7 +88,6 @@
 
     <button type="submit">提交投稿</button>
   </form>
-
   <!-- ★★★ Netlify 识别用隐藏模板（必加） ★★★ -->
   <form name="pvz-submission" netlify netlify-honeypot="bot-field" hidden>
     <input type="text" name="name">
