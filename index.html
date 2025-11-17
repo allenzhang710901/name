@@ -12,14 +12,14 @@
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
-        color: white; /* 字体颜色可调 */
+        color: white;
         font-family: Arial, sans-serif;
     }
 
     .box {
         padding: 16px;
         margin: 20px;
-        background: rgba(0, 0, 0, 0.5); /* 半透明背景提升可读性 */
+        background: rgba(0, 0, 0, 0.5);
         border-radius: 8px;
     }
 
@@ -84,6 +84,13 @@
     </label>
 
     <button type="submit">提交投稿</button>
+  </form>
+
+  <!-- ★★★ Netlify 识别用隐藏模板（必加） ★★★ -->
+  <form name="pvz-submission" netlify netlify-honeypot="bot-field" hidden>
+    <input type="text" name="name">
+    <textarea name="desc"></textarea>
+    <input type="file" name="screenshot">
   </form>
 
 </body>
