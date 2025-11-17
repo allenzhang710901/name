@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>PvZ: Rise of Battle 投稿区</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; }
+    h1 { color: #ff6600; }
+    .box { padding: 16px; border: 1px solid #ccc; border-radius: 8px; }
+    label { display: block; margin-top: 8px; }
+    input, textarea { width: 100%; box-sizing: border-box; margin-top: 4px; }
+    button { margin-top: 12px; padding: 8px 16px; }
+  </style>
+</head>
+<body>
+  <h1>PvZ: Rise of Battle 投稿区</h1>
+
+  <div class="box">
+    <p>目前是测试版投稿页面，暂时不会自动保存到数据库，以后会升级成真正的在线投稿系统。</p>
+
+    <!-- 现在先给玩家一个投稿说明 -->
+    <p>现在想投稿可以：</p>
+    <ul>
+      <li>在 QQ 群：XXXXXXXX 中发送你的作品</li>
+      <li>或者发邮件到：yourmail@example.com</li>
+    </ul>
+  </div>
+
+  <!-- 预留一个表单，将来可以用 JS / 后端来接 -->
+  <div class="box" style="margin-top:20px">
+    <h2>预留表单（以后可接后台）</h2>
+    <label>昵称
+      <input id="name">
+    </label>
+    <label>作品说明 / 关卡ID
+      <textarea id="content" rows="4"></textarea>
+    </label>
+    <button onclick="alert('现在是演示版，还没有真正提交到服务器哦~')">
+      提交（测试）
+    </button>
+  </div>
+</body>
+</html>
