@@ -6,21 +6,21 @@
 
   <style>
     body {
-        margin: 0;
-        padding: 0;
-        background-image: url("https://raw.githubusercontent.com/allenzhang710901/name/main/images/202308241606411839.jpg");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-        color: white;
-        font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url("https://raw.githubusercontent.com/allenzhang710901/name/main/images/202308241606411839.jpg");
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      color: white;
+      font-family: Arial, sans-serif;
     }
 
     .box {
-        padding: 16px;
-        margin: 20px;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 8px;
+      padding: 16px;
+      margin: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
     }
 
     label { display: block; margin-top: 10px; }
@@ -43,11 +43,18 @@
       color: black;
       font-size: 16px;
     }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+    }
   </style>
 </head>
 
 <body>
-  <h1 style="text-align:center; text-shadow:2px 2px 4px black;">PvZ: Rise of Battle 投稿区</h1>
+  <h1 style="text-align:center; text-shadow:2px 2px 4px black;">
+    PvZ: Rise of Battle 投稿区
+  </h1>
 
   <div class="box">
     <p>请投稿</p>
@@ -59,19 +66,8 @@
     </ul>
   </div>
 
-  <!-- ★★★ Netlify 表单（可上传图片） ★★★ -->
-  <!-- ★★★ Netlify 表单（可上传图片） ★★★ -->
-  <form name="pvz-submission"
-        method="POST"
-        action="/"
-        data-netlify="true"
-        netlify
-        enctype="multipart/form-data"
-        class="box">
-
-    <!-- Netlify 表单识别必需隐藏字段 -->
-    <input type="hidden" name="form-name" value="pvz-submission">
-
+  <!-- ★★★ Supabase 表单（可上传图片） ★★★ -->
+  <form id="pvz-form" class="box">
     <h2>在线投稿（可上传图片）</h2>
 
     <label>昵称：
@@ -87,13 +83,90 @@
     </label>
 
     <button type="submit">提交投稿</button>
-  </form>
-  <!-- ★★★ Netlify 识别用隐藏模板（必加） ★★★ -->
-  <form name="pvz-submission" netlify netlify-honeypot="bot-field" hidden>
-    <input type="text" name="name">
-    <textarea name="desc"></textarea>
-    <input type="file" name="screenshot">
+
+    <div id="status" class="status"></div>
   </form>
 
+  <!-- 引入 Supabase JS v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // 你的 Supabase 项目配置
+    const SUPABASE_URL = "https://noshzdygumsifxqtcreg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vc2h6ZHlndW1zaWZ4cXRjcmVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTQ5MzAsImV4cCI6MjA3ODk3MDkzMH0.rYcsX5Wi5JOE07k9gjhH1JzIXvOvtpliRkB7YLGyBPE";
+
+    const { createClient } = supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById("pvz-form");
+    const statusDiv = document.getElementById("status");
+
+    function setStatus(msg, isError = false) {
+      statusDiv.textContent = msg;
+      statusDiv.style.color = isError ? "red" : "lightgreen";
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setStatus("正在提交，请稍候……");
+
+      const formData = new FormData(form);
+      const name = formData.get("name");
+      const descText = formData.get("desc");
+      const file = formData.get("screenshot");
+
+      try {
+        let screenshotUrl = null;
+
+        // 如果有图片，上传到 Storage 的 screenshots bucket
+        if (file && file.size > 0) {
+          const ext = file.name.split(".").pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const filePath = `public/${fileName}`;
+
+          const { data: uploadData, error: uploadError } = await client
+            .storage
+            .from("screenshots")
+            .upload(filePath, file, {
+              cacheControl: "3600",
+              upsert: false
+            });
+
+          if (uploadError) {
+            console.error(uploadError);
+            setStatus("图片上传失败，请稍后再试。", true);
+            return;
+          }
+
+          const { data: publicUrlData } = client
+            .storage
+            .from("screenshots")
+            .getPublicUrl(filePath);
+
+          screenshotUrl = publicUrlData.publicUrl;
+        }
+
+        // 写入 submissions 表
+        const { error: insertError } = await client
+          .from("submissions")
+          .insert({
+            name: name,
+            description: descText,
+            screenshot_url: screenshotUrl
+          });
+
+        if (insertError) {
+          console.error(insertError);
+          setStatus("保存到数据库失败，请稍后再试。", true);
+          return;
+        }
+
+        setStatus("投稿成功，感谢你的作品！");
+        form.reset();
+      } catch (e) {
+        console.error(e);
+        setStatus("发生错误，请稍后再试。", true);
+      }
+    });
+  </script>
 </body>
 </html>
